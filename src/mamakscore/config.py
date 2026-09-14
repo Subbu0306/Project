@@ -5,7 +5,9 @@ from typing import Literal
 from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-DEFAULT_RUBRIC = Path(__file__).parents[2] / "rubric/mamakscore-v3.yaml"
+# Shipped as package data so the engine works when pip-installed, not only
+# from a source checkout.
+DEFAULT_RUBRIC = Path(__file__).parent / "data/mamakscore-v3.yaml"
 
 
 class Settings(BaseSettings):

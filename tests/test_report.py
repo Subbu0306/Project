@@ -8,7 +8,7 @@ from mamakscore.provider import OfflineProvider
 from mamakscore.report import render_report
 from mamakscore.rubric import load_rubric
 
-R = load_rubric(Path(__file__).parents[1] / "rubric/mamakscore-v3.yaml")
+R = load_rubric(Path(__file__).parents[1] / "src/mamakscore/data/mamakscore-v3.yaml")
 
 
 def result(tmp_path):

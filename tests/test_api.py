@@ -26,7 +26,8 @@ def client():
     return TestClient(
         create_app(
             Settings(
-                mode="offline", rubric_path=Path(__file__).parents[1] / "rubric/mamakscore-v3.yaml"
+                mode="offline",
+                rubric_path=Path(__file__).parents[1] / "src/mamakscore/data/mamakscore-v3.yaml",
             )
         )
     )

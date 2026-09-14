@@ -14,7 +14,7 @@ from mamakscore.errors import ServiceError
 from mamakscore.rubric import load_rubric
 from mamakscore.scoring import build_improvement_actions
 
-R = load_rubric(Path(__file__).parents[1] / "rubric/mamakscore-v3.yaml")
+R = load_rubric(Path(__file__).parents[1] / "src/mamakscore/data/mamakscore-v3.yaml")
 
 
 def scores(value):

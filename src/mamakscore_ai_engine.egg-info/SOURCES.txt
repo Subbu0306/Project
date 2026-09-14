@@ -24,6 +24,7 @@ src/mamakscore/rubric.py
 src/mamakscore/sampling.py
 src/mamakscore/scoring.py
 src/mamakscore/workbook.py
+src/mamakscore/data/mamakscore-v3.yaml
 src/mamakscore_ai_engine.egg-info/PKG-INFO
 src/mamakscore_ai_engine.egg-info/SOURCES.txt
 src/mamakscore_ai_engine.egg-info/dependency_links.txt

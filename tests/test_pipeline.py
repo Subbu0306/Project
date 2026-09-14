@@ -9,7 +9,7 @@ from mamakscore.pipeline import EvaluationPipeline
 from mamakscore.provider import OfflineProvider, ProviderResponse
 from mamakscore.rubric import load_rubric
 
-R = load_rubric(Path(__file__).parents[1] / "rubric/mamakscore-v3.yaml")
+R = load_rubric(Path(__file__).parents[1] / "src/mamakscore/data/mamakscore-v3.yaml")
 
 
 def pdf(text):
