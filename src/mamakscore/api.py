@@ -5,6 +5,7 @@ import asyncio
 import json
 import re
 import uuid
+from collections.abc import AsyncIterator, Awaitable, Callable
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime
 from functools import partial
@@ -12,7 +13,7 @@ from pathlib import PurePath
 from typing import Any
 
 import anyio
-from fastapi import FastAPI, File, Form, Request, UploadFile
+from fastapi import FastAPI, File, Form, Request, Response, UploadFile
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
@@ -120,14 +121,16 @@ def create_app(
     gate = CapacityGate(settings.max_concurrency, settings.queue_wait_seconds)
 
     @asynccontextmanager
-    async def lifespan(app: FastAPI):
+    async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         app.state.pipeline = pipeline or build_pipeline(settings)
         yield
 
     app = FastAPI(title="MamakScore AI Engine", version="1.0", lifespan=lifespan)
 
     @app.middleware("http")
-    async def request_id_middleware(request: Request, call_next):
+    async def request_id_middleware(
+        request: Request, call_next: Callable[[Request], Awaitable[Response]]
+    ) -> Response:
         supplied = request.headers.get("X-Request-ID", "")
         request.state.request_id = supplied if REQUEST_ID.fullmatch(supplied) else str(uuid.uuid4())
         response = await call_next(request)
@@ -135,11 +138,11 @@ def create_app(
         return response
 
     @app.exception_handler(ServiceError)
-    async def service_error(request: Request, exc: ServiceError):
+    async def service_error(request: Request, exc: ServiceError) -> JSONResponse:
         return _error(request, exc)
 
     @app.exception_handler(RequestValidationError)
-    async def validation_error(request: Request, exc: RequestValidationError):
+    async def validation_error(request: Request, exc: RequestValidationError) -> JSONResponse:
         return _error(
             request,
             ServiceError(
@@ -150,7 +153,7 @@ def create_app(
         )
 
     @app.exception_handler(Exception)
-    async def internal_error(request: Request, exc: Exception):
+    async def internal_error(request: Request, exc: Exception) -> JSONResponse:
         print(
             json.dumps(
                 {
@@ -168,11 +171,11 @@ def create_app(
         )
 
     @app.get("/health")
-    async def health():
+    async def health() -> dict[str, str]:
         return {"status": "ok"}
 
     @app.get("/ready")
-    async def ready(request: Request):
+    async def ready(request: Request) -> dict[str, Any]:
         return {
             "status": "ready",
             "mode": settings.mode,
@@ -187,7 +190,7 @@ def create_app(
         financial_model: UploadFile | None = File(default=None),
         use_cache: bool = Form(False),
         data_classification: str = Form("public"),
-    ):
+    ) -> EvaluationEnvelope:
         if data_classification not in {"public", "synthetic", "confidential"}:
             raise ServiceError(
                 ErrorCode.INVALID_REQUEST,
@@ -262,7 +265,7 @@ def create_app(
         )
 
     @app.post("/api/compare")
-    async def compare(request: Request, payload: ComparisonRequest):
+    async def compare(request: Request, payload: ComparisonRequest) -> dict[str, Any]:
         return {
             "api_version": "1.0",
             "request_id": request.state.request_id,

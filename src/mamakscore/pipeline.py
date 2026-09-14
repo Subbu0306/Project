@@ -5,6 +5,7 @@ import hashlib
 import time
 from decimal import Decimal
 from pathlib import Path
+from typing import Any
 
 from .cache import ReplayCache
 from .confidence import FORMULA_VERSION, calculate_confidence
@@ -24,7 +25,7 @@ class EvaluationPipeline:
     def __init__(
         self,
         rubric: RubricDefinition,
-        provider,
+        provider: Any,
         *,
         cache: ReplayCache | None = None,
         extraction_limits: ExtractionLimits | None = None,

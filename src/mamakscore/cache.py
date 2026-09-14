@@ -18,13 +18,13 @@ class ReplayCache:
         if enabled:
             self._initialize()
 
-    def _connect(self):
+    def _connect(self) -> sqlite3.Connection:
         connection = sqlite3.connect(self.path, timeout=5)
         connection.execute("PRAGMA journal_mode=WAL")
         connection.execute("PRAGMA busy_timeout=5000")
         return connection
 
-    def _initialize(self):
+    def _initialize(self) -> None:
         self.path.parent.mkdir(parents=True, exist_ok=True)
         with self._connect() as db:
             db.execute(

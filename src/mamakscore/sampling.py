@@ -4,11 +4,13 @@ from __future__ import annotations
 import csv
 import hashlib
 import random
+from collections.abc import Mapping
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Any
 
 
-def _value(row, names):
+def _value(row: Mapping[str, str], names: tuple[str, ...]) -> str:
     return next((row.get(name, "").strip() for name in names if row.get(name, "").strip()), "")
 
 
@@ -19,7 +21,7 @@ def sample_corpus(
     seed: int = 2900,
     dev_count: int = 15,
     test_count: int = 40,
-) -> dict:
+) -> dict[str, Any]:
     raw = index_path.read_bytes()
     famous = {
         line.strip().casefold()

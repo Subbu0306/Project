@@ -1,14 +1,15 @@
 # Safe, deterministic and accessible HTML report rendering.
+from collections.abc import Iterable
 from html import escape
 
 from .contracts import AssessmentResult
 
 
-def _e(value) -> str:
+def _e(value: object) -> str:
     return escape(str(value), quote=True)
 
 
-def _list(items):
+def _list(items: Iterable[object]) -> str:
     return (
         "<ul>" + "".join(f"<li>{_e(x)}</li>" for x in items) + "</ul>"
         if items

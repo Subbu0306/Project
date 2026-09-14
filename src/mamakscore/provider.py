@@ -92,7 +92,8 @@ class OpenAICompatibleProvider:
                     status_code=503,
                 )
             try:
-                return response.json()
+                payload: dict[str, Any] = response.json()
+                return payload
             except ValueError as exc:
                 raise ServiceError(
                     ErrorCode.INVALID_MODEL_OUTPUT,

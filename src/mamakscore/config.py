@@ -29,7 +29,7 @@ class Settings(BaseSettings):
     max_total_bytes: int = 30 * 1024 * 1024
 
     @model_validator(mode="after")
-    def validate_hosted(self):
+    def validate_hosted(self) -> "Settings":
         if self.mode == "hosted" and not all((self.llm_base_url, self.llm_api_key, self.llm_model)):
             raise ValueError("hosted mode requires LLM base URL, API key and model")
         if (

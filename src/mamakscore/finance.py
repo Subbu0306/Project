@@ -1,6 +1,6 @@
 """Client-supplied financial formulas using Decimal arithmetic."""
 
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from decimal import Decimal, InvalidOperation
 
 from .contracts import FinancialInput, FinancialMetric, FinancialResult
@@ -15,7 +15,13 @@ FORMULAS = {
 }
 
 
-def _metric(name, value=None, reason=None, inputs=(), unit="currency"):
+def _metric(
+    name: str,
+    value: Decimal | None = None,
+    reason: str | None = None,
+    inputs: Sequence[str] = (),
+    unit: str = "currency",
+) -> FinancialMetric:
     return FinancialMetric(
         name=name,
         value=value,
@@ -26,7 +32,7 @@ def _metric(name, value=None, reason=None, inputs=(), unit="currency"):
     )
 
 
-def _missing(name, inputs):
+def _missing(name: str, inputs: Sequence[str]) -> FinancialMetric:
     return _metric(
         name,
         reason="MISSING_INPUT",
@@ -36,7 +42,7 @@ def _missing(name, inputs):
 
 
 def calculate_financials(inputs: Mapping[str, FinancialInput]) -> FinancialResult:
-    metrics = {}
+    metrics: dict[str, FinancialMetric] = {}
     customers, arpu = inputs.get("customers"), inputs.get("arpu")
     if customers and arpu:
         revenue = customers.value * arpu.value

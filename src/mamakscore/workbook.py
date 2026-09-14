@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from decimal import Decimal, InvalidOperation
 from io import BytesIO
 from pathlib import PurePosixPath
+from typing import Any, Literal
 from zipfile import BadZipFile, ZipFile
 
 from openpyxl import load_workbook
@@ -14,6 +15,8 @@ from openpyxl import load_workbook
 from .contracts import FinancialInput, FinancialResult
 from .errors import ErrorCode, ServiceError
 from .finance import calculate_financials
+
+PeriodLiteral = Literal["monthly", "annual", "point_in_time", "unknown"]
 
 
 @dataclass(frozen=True)
@@ -45,7 +48,7 @@ FAMILY = {
 }
 
 
-def _norm(value) -> str:
+def _norm(value: object) -> str:
     return re.sub(r"\s+", " ", str(value).strip().casefold())
 
 
@@ -93,7 +96,7 @@ def _preflight(data: bytes, limits: WorkbookLimits) -> None:
         ) from exc
 
 
-def _number(value):
+def _number(value: object) -> Decimal | None:
     if isinstance(value, bool) or value is None:
         return None
     if isinstance(value, (int, float, Decimal)):
@@ -108,12 +111,12 @@ def _number(value):
     return -result if negative else result
 
 
-def _canonical(label: str):
+def _canonical(label: str) -> str | None:
     normalized = _norm(label)
     return next((key for key, values in ALIASES.items() if normalized in values), None)
 
 
-def _family(labels: set[str]):
+def _family(labels: set[str]) -> str:
     if "ebitda" in labels or "funding requirements" in labels:
         return "startup"
     if "scenario analysis" in labels or "unit economics" in labels:
@@ -125,7 +128,7 @@ def _family(labels: set[str]):
     return name if count >= 2 else "unknown"
 
 
-def _period(key, label, headers):
+def _period(key: str, label: str, headers: list[str]) -> PeriodLiteral:
     joined = " ".join([_norm(label), *headers])
     if key in {"cash", "customers", "customer_lifetime", "cac"}:
         return "point_in_time"
@@ -163,10 +166,10 @@ def parse_workbook(data: bytes, filename: str, limits: WorkbookLimits) -> Financ
             "The financial model could not be read.",
             field="financial_model",
         ) from exc
-    inputs = {}
-    labels = set()
-    lines = []
-    warnings = []
+    inputs: dict[str, FinancialInput] = {}
+    labels: set[str] = set()
+    lines: list[str] = []
+    warnings: list[str] = []
     try:
         for ws in wb.worksheets:
             if ws.sheet_state != "visible":
@@ -186,11 +189,11 @@ def parse_workbook(data: bytes, filename: str, limits: WorkbookLimits) -> Financ
                 key = _canonical(label)
                 if not key:
                     continue
-                candidates = [
-                    (cell, _number(cell.value))
-                    for cell in row[1:]
-                    if _number(cell.value) is not None
-                ]
+                candidates: list[tuple[Any, Decimal]] = []
+                for candidate_cell in row[1:]:
+                    parsed = _number(candidate_cell.value)
+                    if parsed is not None:
+                        candidates.append((candidate_cell, parsed))
                 if not candidates:
                     warnings.append(f"No cached numeric value for {label} on sheet {ws.title}.")
                     continue

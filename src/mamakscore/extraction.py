@@ -48,7 +48,7 @@ def _ratios(text: str) -> tuple[int, float, float]:
 def _render(page: Any, number: int, limit: int) -> RenderedPage:
     longest = max(page.rect.width, page.rect.height)
     zoom = min(2.0, limit / longest) if longest else 1.0
-    pix = page.get_pixmap(matrix=pymupdf.Matrix(zoom, zoom), alpha=False)
+    pix = page.get_pixmap(matrix=pymupdf.Matrix(zoom, zoom), alpha=False)  # type: ignore[no-untyped-call]
     return RenderedPage(number=number, png=pix.tobytes("png"))
 
 
@@ -66,7 +66,7 @@ def extract_pdf(
             field="pitch_deck",
         )
     try:
-        doc = pymupdf.open(stream=data, filetype="pdf")
+        doc = pymupdf.open(stream=data, filetype="pdf")  # type: ignore[no-untyped-call]
     except Exception as exc:
         raise ServiceError(
             ErrorCode.UNREADABLE_PDF, "The pitch deck could not be read.", field="pitch_deck"
@@ -167,4 +167,4 @@ def extract_pdf(
             text_characters=len(canonical),
         )
     finally:
-        doc.close()
+        doc.close()  # type: ignore[no-untyped-call]
